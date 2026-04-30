@@ -1,3 +1,200 @@
+// ========== COLLAPSIBLE PRICING SECTIONS TOGGLE ==========
+// This makes pricing sections act like buttons - click to show/hide tables
+
+// Track which sections are open
+let openSections = {
+    iphoneScreen: false,
+    iphoneBattery: false,
+    android: false
+};
+
+// Toggle function for pricing sections
+function togglePricingSection(sectionName) {
+    let section = null;
+    let toggleBtn = null;
+    
+    switch(sectionName) {
+        case 'iphoneScreen':
+            section = document.getElementById('iphoneScreenPricing');
+            toggleBtn = document.getElementById('iphoneScreenToggleBtn');
+            break;
+        case 'iphoneBattery':
+            section = document.getElementById('iphoneBatteryPricing');
+            toggleBtn = document.getElementById('iphoneBatteryToggleBtn');
+            break;
+        case 'android':
+            section = document.getElementById('androidPricing');
+            toggleBtn = document.getElementById('androidToggleBtn');
+            break;
+    }
+    
+    if (!section) return;
+    
+    // Toggle the 'open' class on section
+    if (section.classList.contains('open')) {
+        // Close section
+        section.classList.remove('open');
+        section.style.maxHeight = '0';
+        section.style.opacity = '0';
+        section.style.margin = '0';
+        section.style.padding = '0';
+        
+        // Update button arrow
+        if (toggleBtn) {
+            const arrow = toggleBtn.querySelector('.toggle-arrow i');
+            if (arrow) {
+                arrow.classList.remove('fa-chevron-up');
+                arrow.classList.add('fa-chevron-down');
+            }
+            // Remove active class
+            toggleBtn.classList.remove('active');
+        }
+        
+        openSections[sectionName] = false;
+    } else {
+        // Open section
+        section.classList.add('open');
+        section.style.maxHeight = section.scrollHeight + 'px';
+        section.style.opacity = '1';
+        section.style.margin = '20px 0 30px';
+        section.style.padding = '1.8rem';
+        
+        // Update button arrow
+        if (toggleBtn) {
+            const arrow = toggleBtn.querySelector('.toggle-arrow i');
+            if (arrow) {
+                arrow.classList.remove('fa-chevron-down');
+                arrow.classList.add('fa-chevron-up');
+            }
+            // Add active class
+            toggleBtn.classList.add('active');
+            
+            // Add shake animation for fun
+            toggleBtn.style.animation = 'shake 0.5s ease';
+            setTimeout(() => {
+                if (toggleBtn) toggleBtn.style.animation = '';
+            }, 500);
+        }
+        
+        openSections[sectionName] = true;
+        
+        // Show floating message
+        let message = '';
+        if (sectionName === 'iphoneScreen') message = '📱 iPhone screen pricing table expanded!';
+        else if (sectionName === 'iphoneBattery') message = '🔋 iPhone battery pricing table expanded!';
+        else message = '🤖 Contact us for Android repair quotes!';
+        showFloatingMessage(message, 'info');
+    }
+}
+
+// Initialize collapsible sections on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Hide all pricing sections initially
+    const iphoneScreenSection = document.getElementById('iphoneScreenPricing');
+    const iphoneBatterySection = document.getElementById('iphoneBatteryPricing');
+    const androidSection = document.getElementById('androidPricing');
+    
+    // Set initial hidden state with proper CSS
+    if (iphoneScreenSection) {
+        iphoneScreenSection.style.maxHeight = '0';
+        iphoneScreenSection.style.opacity = '0';
+        iphoneScreenSection.style.overflow = 'hidden';
+        iphoneScreenSection.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+        iphoneScreenSection.style.padding = '0 1.8rem';
+        iphoneScreenSection.style.margin = '0';
+        iphoneScreenSection.classList.remove('open');
+    }
+    
+    if (iphoneBatterySection) {
+        iphoneBatterySection.style.maxHeight = '0';
+        iphoneBatterySection.style.opacity = '0';
+        iphoneBatterySection.style.overflow = 'hidden';
+        iphoneBatterySection.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+        iphoneBatterySection.style.padding = '0 1.8rem';
+        iphoneBatterySection.style.margin = '0';
+        iphoneBatterySection.classList.remove('open');
+    }
+    
+    if (androidSection) {
+        androidSection.style.maxHeight = '0';
+        androidSection.style.opacity = '0';
+        androidSection.style.overflow = 'hidden';
+        androidSection.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+        androidSection.style.padding = '0 1.8rem';
+        androidSection.style.margin = '0';
+        androidSection.classList.remove('open');
+    }
+    
+    // Optional: Auto-open the iPhone screen pricing from URL hash if needed
+    if (window.location.hash === '#iphone-screen') {
+        setTimeout(() => togglePricingSection('iphoneScreen'), 500);
+    }
+    if (window.location.hash === '#iphone-battery') {
+        setTimeout(() => togglePricingSection('iphoneBattery'), 500);
+    }
+});
+
+// Also update the card click handlers to open the corresponding pricing section
+// Add this to the existing getCardMapping function
+function updateCardMappings() {
+    const serviceCards = document.querySelectorAll(".card");
+    serviceCards.forEach(card => {
+        const titleElement = card.querySelector("h3");
+        if (titleElement) {
+            const cardTitle = titleElement.innerText;
+            card.addEventListener("click", (e) => {
+                e.stopPropagation();
+                
+                // Open the corresponding pricing section if needed
+                if (cardTitle.includes("iPhone Screens")) {
+                    if (!openSections.iphoneScreen) {
+                        togglePricingSection('iphoneScreen');
+                    }
+                } else if (cardTitle.includes("iPhone Battery")) {
+                    if (!openSections.iphoneBattery) {
+                        togglePricingSection('iphoneBattery');
+                    }
+                } else if (cardTitle.includes("Android")) {
+                    if (!openSections.android) {
+                        togglePricingSection('android');
+                    }
+                }
+                
+                // Get mapping and scroll
+                const mapping = getCardMapping(cardTitle);
+                if (mapping) {
+                    showFloatingMessage(mapping.message, "info");
+                    
+                    // Scroll to appropriate section
+                    switch(mapping.section) {
+                        case "iphone-screen":
+                            const iphoneScreenBtn = document.querySelector("#iphoneScreenToggleBtn");
+                            if (iphoneScreenBtn) iphoneScreenBtn.scrollIntoView({ behavior: "smooth", block: "start" });
+                            break;
+                        case "iphone-battery":
+                            const iphoneBatteryBtn = document.querySelector("#iphoneBatteryToggleBtn");
+                            if (iphoneBatteryBtn) iphoneBatteryBtn.scrollIntoView({ behavior: "smooth", block: "start" });
+                            break;
+                        case "android":
+                            const androidBtn = document.querySelector("#androidToggleBtn");
+                            if (androidBtn) androidBtn.scrollIntoView({ behavior: "smooth", block: "start" });
+                            break;
+                        default:
+                            const section = document.querySelector(mapping.section === "laptop" ? ".laptops-showcase" : "#bookingForm");
+                            if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                }
+            });
+        }
+    });
+}
+
+// Call this after DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    updateCardMappings();
+});
+
+// ... (rest of your existing JavaScript code remains the same)
 // SEARCH FUNCTIONALITY with smooth filtering
 const searchInput = document.getElementById("search");
 const serviceCards = document.querySelectorAll(".card");

@@ -81,13 +81,30 @@
         </div>
     </div>
 
-    <!-- DEVICE PRICING - iPhone Screens -->
+    <!-- DEVICE PRICING - iPhone Screens (COLLAPSIBLE BUTTON SECTION) -->
     <div class="section-header">
         <h2><i class="fab fa-apple"></i> iPhone Screen Repair Pricing</h2>
         <div class="section-line"></div>
     </div>
     
-    <div class="pricing-showcase" id="iphone-screen-pricing">
+    <!-- Toggle Button for iPhone Screen Pricing -->
+    <div class="price-toggle-btn" id="iphoneScreenToggleBtn" onclick="togglePricingSection('iphoneScreen')">
+        <div class="toggle-btn-content">
+            <div class="toggle-icon">
+                <i class="fas fa-mobile-alt"></i>
+            </div>
+            <div class="toggle-text">
+                <h3>📱 iPhone Screen Replacement</h3>
+                <p>Tap to view full pricing table for all iPhone models</p>
+            </div>
+            <div class="toggle-arrow">
+                <i class="fas fa-chevron-down"></i>
+            </div>
+        </div>
+        <div class="price-badge">From R500</div>
+    </div>
+    
+    <div class="pricing-showcase collapsible-section" id="iphoneScreenPricing">
         <div class="pricing-table-wrapper">
             <div class="table-responsive">
                 <table class="pricing-table">
@@ -126,13 +143,30 @@
         </div>
     </div>
     
-    <!-- DEVICE PRICING - iPhone Batteries -->
+    <!-- DEVICE PRICING - iPhone Batteries (COLLAPSIBLE BUTTON SECTION) -->
     <div class="section-header">
         <h2><i class="fas fa-battery-full"></i> iPhone Battery Replacement Pricing</h2>
         <div class="section-line"></div>
     </div>
     
-    <div class="pricing-showcase" id="iphone-battery-pricing">
+    <!-- Toggle Button for iPhone Battery Pricing -->
+    <div class="price-toggle-btn" id="iphoneBatteryToggleBtn" onclick="togglePricingSection('iphoneBattery')">
+        <div class="toggle-btn-content">
+            <div class="toggle-icon">
+                <i class="fas fa-battery-full"></i>
+            </div>
+            <div class="toggle-text">
+                <h3>🔋 iPhone Battery Replacement</h3>
+                <p>Tap to view battery pricing for all iPhone models</p>
+            </div>
+            <div class="toggle-arrow">
+                <i class="fas fa-chevron-down"></i>
+            </div>
+        </div>
+        <div class="price-badge">From R450</div>
+    </div>
+    
+    <div class="pricing-showcase collapsible-section" id="iphoneBatteryPricing">
         <div class="pricing-table-wrapper">
             <div class="table-responsive">
                 <table class="pricing-table">
@@ -171,13 +205,30 @@
         </div>
     </div>
     
-    <!-- DEVICE PRICING - Android Repairs -->
+    <!-- DEVICE PRICING - Android Repairs (COLLAPSIBLE BUTTON SECTION) -->
     <div class="section-header">
         <h2><i class="fab fa-android"></i> Android Screen & Battery Repair</h2>
         <div class="section-line"></div>
     </div>
     
-    <div class="pricing-showcase android-pricing" id="android-pricing">
+    <!-- Toggle Button for Android Pricing -->
+    <div class="price-toggle-btn" id="androidToggleBtn" onclick="togglePricingSection('android')">
+        <div class="toggle-btn-content">
+            <div class="toggle-icon">
+                <i class="fab fa-android"></i>
+            </div>
+            <div class="toggle-text">
+                <h3>🤖 Android Device Repairs</h3>
+                <p>Tap to request a quote for your Android device</p>
+            </div>
+            <div class="toggle-arrow">
+                <i class="fas fa-chevron-down"></i>
+            </div>
+        </div>
+        <div class="price-badge">Quote Based</div>
+    </div>
+    
+    <div class="pricing-showcase collapsible-section" id="androidPricing">
         <div class="pricing-table-wrapper">
             <div class="android-message">
                 <i class="fas fa-info-circle"></i>
@@ -192,28 +243,27 @@
 
     <!-- LAPTOPS REPAIR SECTION -->
     <div class="section-header">
-        <h2><i class="fas fa-laptop-code"></i> 🔥  Laptops Repairs</h2>
+        <h2><i class="fas fa-laptop-code"></i> 🔥 Laptops Repairs</h2>
         <div class="section-line"></div>
     </div>
     <div class="laptops-showcase">
         <div class="laptop-card">
             <div class="laptop-img"><i class="fas fa-laptop"></i></div>
-            <h3>Dell </h3>
+            <h3>Dell</h3>
         </div>
         <div class="laptop-card">
             <div class="laptop-img"><i class="fab fa-apple"></i></div>
-            <h3>MacBook </h3>
+            <h3>MacBook</h3>
             <div class="laptop-badge">🍎 Apple Silicone</div>
         </div>
         <div class="laptop-card">
             <div class="laptop-img"><i class="fas fa-laptop"></i></div>
-            <h3>HP </h3>
+            <h3>HP</h3>
             <div class="laptop-badge">🔄 2-in-1</div>
         </div>
         <div class="laptop-card">
             <div class="laptop-img"><i class="fab fa-windows"></i></div>
             <h3>Lenovo ThinkPad</h3>
-
             <div class="laptop-badge">💼 Business Grade</div>
         </div>
     </div>
@@ -271,7 +321,7 @@
     <!-- REPAIR DOCTOR PROFILE -->
     <div class="doctor-profile">
         <div class="doctor-image">
-            <img src="src/images/ofentse_picture_pp.jpeg"Dr. Ofentse - Your Repair Doctor">
+            <img src="src/images/ofentse_picture_pp.jpeg" alt="Dr. Ofentse - Your Repair Doctor">
             <div class="doctor-badge"><i class="fas fa-stethoscope"></i> Repair Doctor</div>
         </div>
         <div class="doctor-details">

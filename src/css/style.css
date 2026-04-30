@@ -972,3 +972,242 @@ footer {
         font-size: 1.3rem;
     }
 }
+/* ========== COLLAPSIBLE PRICING SECTIONS - TOGGLE BUTTON STYLES ========== */
+
+/* Toggle Button Container */
+.price-toggle-btn {
+    background: linear-gradient(135deg, #1a2340, #0f172f);
+    border-radius: 60px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    margin: 20px 0 10px;
+    overflow: hidden;
+    position: relative;
+    animation: fadeSlideUp 0.5s ease;
+}
+
+.price-toggle-btn:hover {
+    transform: translateY(-3px);
+    border-color: var(--primary);
+    box-shadow: 0 10px 25px -5px rgba(56, 189, 248, 0.3);
+    background: linear-gradient(135deg, #1f2a4a, #131c38);
+}
+
+.price-toggle-btn:active {
+    transform: translateY(0px);
+}
+
+/* Active state when pricing is open */
+.price-toggle-btn.active {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, #1e3a7a, #162a5e);
+    box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4);
+}
+
+/* Button Content Layout */
+.toggle-btn-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 18px 25px;
+    position: relative;
+    z-index: 2;
+}
+
+/* Icon Section */
+.toggle-icon {
+    width: 55px;
+    height: 55px;
+    background: rgba(56, 189, 248, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: var(--primary);
+    transition: all 0.3s ease;
+}
+
+.price-toggle-btn:hover .toggle-icon {
+    background: rgba(56, 189, 248, 0.3);
+    transform: scale(1.05);
+}
+
+.price-toggle-btn.active .toggle-icon {
+    background: var(--primary);
+    color: #0f172a;
+}
+
+/* Text Section */
+.toggle-text {
+    flex: 1;
+}
+
+.toggle-text h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: var(--text-light);
+}
+
+.toggle-text p {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin: 0;
+}
+
+/* Arrow Icon */
+.toggle-arrow {
+    width: 40px;
+    height: 40px;
+    background: rgba(56, 189, 248, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.toggle-arrow i {
+    font-size: 1.2rem;
+    color: var(--primary);
+    transition: transform 0.3s ease;
+}
+
+.price-toggle-btn:hover .toggle-arrow {
+    background: rgba(56, 189, 248, 0.2);
+    transform: scale(1.05);
+}
+
+/* Price Badge */
+.price-badge {
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    padding: 5px 15px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 3;
+}
+
+/* Collapsible Section */
+.collapsible-section {
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(12, 18, 30, 0.6);
+    border-radius: 36px;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+.collapsible-section.open {
+    max-height: 2000px;
+    opacity: 1;
+    margin: 20px 0 30px !important;
+    padding: 1.8rem !important;
+}
+
+/* Shake Animation */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+    20%, 40%, 60%, 80% { transform: translateX(3px); }
+}
+
+/* Pulse Animation for badge */
+@keyframes badgePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.price-toggle-btn.active .price-badge {
+    animation: badgePulse 0.5s ease;
+}
+
+/* Responsive adjustments for toggle buttons */
+@media (max-width: 640px) {
+    .toggle-btn-content {
+        padding: 15px 18px;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    
+    .toggle-icon {
+        width: 45px;
+        height: 45px;
+        font-size: 1.4rem;
+    }
+    
+    .toggle-text h3 {
+        font-size: 1rem;
+    }
+    
+    .toggle-text p {
+        font-size: 0.7rem;
+    }
+    
+    .price-badge {
+        position: static;
+        display: inline-block;
+        margin-top: 5px;
+        font-size: 0.7rem;
+        padding: 3px 12px;
+    }
+    
+    .toggle-arrow {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .collapsible-section.open {
+        padding: 1rem !important;
+    }
+}
+
+/* Ripple effect on click */
+.price-toggle-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.price-toggle-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(56, 189, 248, 0.4);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+    pointer-events: none;
+}
+
+.price-toggle-btn:active::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* Hover glow effect */
+.price-toggle-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.1), transparent);
+    transition: left 0.5s ease;
+    pointer-events: none;
+}
+
+.price-toggle-btn:hover::before {
+    left: 100%;
+}

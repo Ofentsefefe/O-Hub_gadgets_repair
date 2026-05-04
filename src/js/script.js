@@ -1,14 +1,10 @@
 // ========== COLLAPSIBLE PRICING SECTIONS TOGGLE ==========
-// This makes pricing sections act like buttons - click to show/hide tables
-
-// Track which sections are open
 let openSections = {
     iphoneScreen: false,
     iphoneBattery: false,
     android: false
 };
 
-// Toggle function for pricing sections
 function togglePricingSection(sectionName) {
     let section = null;
     let toggleBtn = null;
@@ -30,55 +26,44 @@ function togglePricingSection(sectionName) {
     
     if (!section) return;
     
-    // Toggle the 'open' class on section
     if (section.classList.contains('open')) {
-        // Close section
         section.classList.remove('open');
         section.style.maxHeight = '0';
         section.style.opacity = '0';
         section.style.margin = '0';
         section.style.padding = '0';
         
-        // Update button arrow
         if (toggleBtn) {
             const arrow = toggleBtn.querySelector('.toggle-arrow i');
             if (arrow) {
                 arrow.classList.remove('fa-chevron-up');
                 arrow.classList.add('fa-chevron-down');
             }
-            // Remove active class
             toggleBtn.classList.remove('active');
         }
-        
         openSections[sectionName] = false;
     } else {
-        // Open section
         section.classList.add('open');
         section.style.maxHeight = section.scrollHeight + 'px';
         section.style.opacity = '1';
         section.style.margin = '20px 0 30px';
         section.style.padding = '1.8rem';
         
-        // Update button arrow
         if (toggleBtn) {
             const arrow = toggleBtn.querySelector('.toggle-arrow i');
             if (arrow) {
                 arrow.classList.remove('fa-chevron-down');
                 arrow.classList.add('fa-chevron-up');
             }
-            // Add active class
             toggleBtn.classList.add('active');
             
-            // Add shake animation for fun
             toggleBtn.style.animation = 'shake 0.5s ease';
             setTimeout(() => {
                 if (toggleBtn) toggleBtn.style.animation = '';
             }, 500);
         }
-        
         openSections[sectionName] = true;
         
-        // Show floating message
         let message = '';
         if (sectionName === 'iphoneScreen') message = '📱 iPhone screen pricing table expanded!';
         else if (sectionName === 'iphoneBattery') message = '🔋 iPhone battery pricing table expanded!';
@@ -87,115 +72,105 @@ function togglePricingSection(sectionName) {
     }
 }
 
-// Initialize collapsible sections on page load
-document.addEventListener('DOMContentLoaded', function() {
-    // Hide all pricing sections initially
-    const iphoneScreenSection = document.getElementById('iphoneScreenPricing');
-    const iphoneBatterySection = document.getElementById('iphoneBatteryPricing');
-    const androidSection = document.getElementById('androidPricing');
-    
-    // Set initial hidden state with proper CSS
-    if (iphoneScreenSection) {
-        iphoneScreenSection.style.maxHeight = '0';
-        iphoneScreenSection.style.opacity = '0';
-        iphoneScreenSection.style.overflow = 'hidden';
-        iphoneScreenSection.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-        iphoneScreenSection.style.padding = '0 1.8rem';
-        iphoneScreenSection.style.margin = '0';
-        iphoneScreenSection.classList.remove('open');
-    }
-    
-    if (iphoneBatterySection) {
-        iphoneBatterySection.style.maxHeight = '0';
-        iphoneBatterySection.style.opacity = '0';
-        iphoneBatterySection.style.overflow = 'hidden';
-        iphoneBatterySection.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-        iphoneBatterySection.style.padding = '0 1.8rem';
-        iphoneBatterySection.style.margin = '0';
-        iphoneBatterySection.classList.remove('open');
-    }
-    
-    if (androidSection) {
-        androidSection.style.maxHeight = '0';
-        androidSection.style.opacity = '0';
-        androidSection.style.overflow = 'hidden';
-        androidSection.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-        androidSection.style.padding = '0 1.8rem';
-        androidSection.style.margin = '0';
-        androidSection.classList.remove('open');
-    }
-    
-    // Optional: Auto-open the iPhone screen pricing from URL hash if needed
-    if (window.location.hash === '#iphone-screen') {
-        setTimeout(() => togglePricingSection('iphoneScreen'), 500);
-    }
-    if (window.location.hash === '#iphone-battery') {
-        setTimeout(() => togglePricingSection('iphoneBattery'), 500);
-    }
-});
+// ========== REVIEW SYSTEM ==========
+let reviews = [];
 
-// Also update the card click handlers to open the corresponding pricing section
-// Add this to the existing getCardMapping function
-function updateCardMappings() {
-    const serviceCards = document.querySelectorAll(".card");
-    serviceCards.forEach(card => {
-        const titleElement = card.querySelector("h3");
-        if (titleElement) {
-            const cardTitle = titleElement.innerText;
-            card.addEventListener("click", (e) => {
-                e.stopPropagation();
-                
-                // Open the corresponding pricing section if needed
-                if (cardTitle.includes("iPhone Screens")) {
-                    if (!openSections.iphoneScreen) {
-                        togglePricingSection('iphoneScreen');
-                    }
-                } else if (cardTitle.includes("iPhone Battery")) {
-                    if (!openSections.iphoneBattery) {
-                        togglePricingSection('iphoneBattery');
-                    }
-                } else if (cardTitle.includes("Android")) {
-                    if (!openSections.android) {
-                        togglePricingSection('android');
-                    }
-                }
-                
-                // Get mapping and scroll
-                const mapping = getCardMapping(cardTitle);
-                if (mapping) {
-                    showFloatingMessage(mapping.message, "info");
-                    
-                    // Scroll to appropriate section
-                    switch(mapping.section) {
-                        case "iphone-screen":
-                            const iphoneScreenBtn = document.querySelector("#iphoneScreenToggleBtn");
-                            if (iphoneScreenBtn) iphoneScreenBtn.scrollIntoView({ behavior: "smooth", block: "start" });
-                            break;
-                        case "iphone-battery":
-                            const iphoneBatteryBtn = document.querySelector("#iphoneBatteryToggleBtn");
-                            if (iphoneBatteryBtn) iphoneBatteryBtn.scrollIntoView({ behavior: "smooth", block: "start" });
-                            break;
-                        case "android":
-                            const androidBtn = document.querySelector("#androidToggleBtn");
-                            if (androidBtn) androidBtn.scrollIntoView({ behavior: "smooth", block: "start" });
-                            break;
-                        default:
-                            const section = document.querySelector(mapping.section === "laptop" ? ".laptops-showcase" : "#bookingForm");
-                            if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }
-                }
-            });
-        }
+function loadReviewsFromStorage() {
+    const stored = localStorage.getItem('theOhubReviews');
+    if(stored) {
+        reviews = JSON.parse(stored);
+    } else {
+        reviews = [
+            { id: Date.now() + 1, name: "Thabo Mbeki", rating: 5, text: "Fixed my water-damaged iPhone in 2 hours! Amazing service!", date: new Date().toLocaleDateString() },
+            { id: Date.now() + 2, name: "Lerato Smith", rating: 4, text: "SSD upgrade made my laptop fly. Very professional.", date: new Date().toLocaleDateString() },
+            { id: Date.now() + 3, name: "Sipho Dlamini", rating: 5, text: "Best repair shop in Joburg! My MacBook works like new.", date: new Date().toLocaleDateString() }
+        ];
+        saveReviewsToStorage();
+    }
+    updateReviewUI();
+}
+
+function saveReviewsToStorage() {
+    localStorage.setItem('theOhubReviews', JSON.stringify(reviews));
+}
+
+function updateReviewUI() {
+    const reviewsContainer = document.getElementById('reviewsList');
+    const avgRatingSpan = document.getElementById('avgRating');
+    const reviewCountSpan = document.getElementById('reviewCount');
+    const avgStarsDisplay = document.getElementById('avgStarsDisplay');
+    
+    if(reviews.length === 0) {
+        reviewsContainer.innerHTML = '<div class="empty-reviews">✨ No reviews yet. Be the first to share your experience! ✨</div>';
+        avgRatingSpan.innerText = '0.0';
+        reviewCountSpan.innerText = '0';
+        avgStarsDisplay.innerHTML = '☆☆☆☆☆';
+        return;
+    }
+    
+    const sortedReviews = [...reviews].reverse();
+    reviewsContainer.innerHTML = sortedReviews.map(rev => `
+        <div class="review-card" data-id="${rev.id}">
+            <div class="reviewer-name"><i class="fas fa-user-circle"></i> ${escapeHtml(rev.name)}</div>
+            <div class="review-stars">${'★'.repeat(rev.rating)}${'☆'.repeat(5-rev.rating)}</div>
+            <div class="review-text">${escapeHtml(rev.text)}</div>
+            <div class="review-date">
+                <span><i class="far fa-calendar-alt"></i> ${rev.date}</span>
+                <button class="delete-review" data-id="${rev.id}"><i class="fas fa-trash-alt"></i> Delete</button>
+            </div>
+        </div>
+    `).join('');
+    
+    document.querySelectorAll('.delete-review').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = parseInt(btn.getAttribute('data-id'));
+            deleteReviewById(id);
+        });
+    });
+    
+    const total = reviews.reduce((sum, r) => sum + r.rating, 0);
+    const avg = total / reviews.length;
+    avgRatingSpan.innerText = avg.toFixed(1);
+    reviewCountSpan.innerText = reviews.length;
+    const fullStars = Math.floor(avg);
+    const halfStar = (avg - fullStars) >= 0.5 ? 1 : 0;
+    let starsHtml = '★'.repeat(fullStars) + (halfStar ? '½' : '') + '☆'.repeat(5 - fullStars - halfStar);
+    avgStarsDisplay.innerHTML = starsHtml;
+}
+
+function deleteReviewById(id) {
+    reviews = reviews.filter(r => r.id !== id);
+    saveReviewsToStorage();
+    updateReviewUI();
+    showFloatingMessage('🗑️ Review deleted successfully!', 'success');
+}
+
+function addReview(name, rating, text) {
+    const newReview = {
+        id: Date.now(),
+        name: name.trim(),
+        rating: parseInt(rating),
+        text: text.trim(),
+        date: new Date().toLocaleDateString()
+    };
+    reviews.push(newReview);
+    saveReviewsToStorage();
+    updateReviewUI();
+    return true;
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
     });
 }
 
-// Call this after DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    updateCardMappings();
-});
-
-// ... (rest of your existing JavaScript code remains the same)
-// SEARCH FUNCTIONALITY with smooth filtering
+// ========== SEARCH FUNCTIONALITY ==========
 const searchInput = document.getElementById("search");
 const serviceCards = document.querySelectorAll(".card");
 
@@ -216,7 +191,6 @@ if (searchInput) {
             }
         });
         
-        // add subtle effect if no results
         const visibleCards = document.querySelectorAll(".card[style='display: block'], .card:not([style*='none'])");
         if (visibleCards.length === 0 && term !== "") {
             let noResultMsg = document.querySelector(".no-result-message");
@@ -236,104 +210,32 @@ if (searchInput) {
     });
 }
 
-// ========== CARD CLICK NAVIGATION TO RELEVANT SECTIONS ==========
-// Updated mapping for all service cards
-function getCardMapping(cardTitle) {
-    if (cardTitle.includes("RAM")) {
-        return { message: "💾 Showing RAM upgrade pricing options →", section: "laptop" };
-    }
-    if (cardTitle.includes("SSD")) {
-        return { message: "⚡ Fast SSD upgrades - check our laptop deals →", section: "laptop" };
-    }
-    if (cardTitle.includes("Laptop Screen")) {
-        return { message: "🖥️ Laptop screen repair - contact us for a quote →", section: "contact" };
-    }
-    if (cardTitle.includes("iPhone Screens")) {
-        return { message: "📱 iPhone screen replacement - scroll to see all iPhone pricing →", section: "iphone-screen" };
-    }
-    if (cardTitle.includes("Android Screen")) {
-        return { message: "🤖 Android screen repair - get a free quote below →", section: "android" };
-    }
-    if (cardTitle.includes("iPhone Battery")) {
-        return { message: "🔋 iPhone battery replacement - check pricing table →", section: "iphone-battery" };
-    }
-    if (cardTitle.includes("Android Battery")) {
-        return { message: "🔋 Android battery replacement - request a quote →", section: "android" };
-    }
-    return null;
-}
-
-// Add click handlers to all service cards
+// ========== CARD CLICK HANDLERS ==========
 serviceCards.forEach(card => {
     const titleElement = card.querySelector("h3");
     if (titleElement) {
         const cardTitle = titleElement.innerText;
-        
         card.addEventListener("click", (e) => {
             e.stopPropagation();
-            const mapping = getCardMapping(cardTitle);
+            let message = `🔧 ${cardTitle} - Click the pricing button above for details!`;
+            showFloatingMessage(message, "info");
             
-            if (mapping) {
-                showFloatingMessage(mapping.message, "info");
-                
-                // Scroll to appropriate section
-                switch(mapping.section) {
-                    case "iphone-screen":
-                        const iphoneScreenSection = document.querySelector("#iphone-screen-pricing");
-                        if (iphoneScreenSection) {
-                            iphoneScreenSection.scrollIntoView({ behavior: "smooth", block: "start" });
-                            highlightElement(iphoneScreenSection);
-                        }
-                        break;
-                    case "iphone-battery":
-                        const iphoneBatterySection = document.querySelector("#iphone-battery-pricing");
-                        if (iphoneBatterySection) {
-                            iphoneBatterySection.scrollIntoView({ behavior: "smooth", block: "start" });
-                            highlightElement(iphoneBatterySection);
-                        }
-                        break;
-                    case "android":
-                        const androidSection = document.querySelector("#android-pricing");
-                        if (androidSection) {
-                            androidSection.scrollIntoView({ behavior: "smooth", block: "start" });
-                            highlightElement(androidSection);
-                        }
-                        break;
-                    case "laptop":
-                        const laptopSection = document.querySelector(".laptops-showcase");
-                        if (laptopSection) {
-                            laptopSection.scrollIntoView({ behavior: "smooth", block: "start" });
-                            highlightElement(laptopSection);
-                        }
-                        break;
-                    case "contact":
-                        const contactForm = document.querySelector("#bookingForm");
-                        if (contactForm) {
-                            contactForm.closest(".form-card").scrollIntoView({ behavior: "smooth", block: "center" });
-                            highlightElement(contactForm.closest(".form-card"));
-                        }
-                        break;
-                    default:
-                        const pricingSection = document.querySelector(".pricing-showcase");
-                        if (pricingSection) {
-                            pricingSection.scrollIntoView({ behavior: "smooth", block: "center" });
-                        }
-                }
+            if (cardTitle.includes("iPhone Screens")) {
+                const btn = document.getElementById("iphoneScreenToggleBtn");
+                if (btn) btn.scrollIntoView({ behavior: "smooth", block: "start" });
+            } else if (cardTitle.includes("iPhone Battery")) {
+                const btn = document.getElementById("iphoneBatteryToggleBtn");
+                if (btn) btn.scrollIntoView({ behavior: "smooth", block: "start" });
+            } else if (cardTitle.includes("Android")) {
+                const btn = document.getElementById("androidToggleBtn");
+                if (btn) btn.scrollIntoView({ behavior: "smooth", block: "start" });
             } else {
-                showFloatingMessage("🔧 Click on any service to see pricing!", "info");
+                const bookingForm = document.querySelector("#bookingForm");
+                if (bookingForm) bookingForm.scrollIntoView({ behavior: "smooth", block: "center" });
             }
         });
     }
 });
-
-// Helper function to highlight an element temporarily
-function highlightElement(element) {
-    if (!element) return;
-    element.style.animation = "pulseHighlight 0.8s ease";
-    setTimeout(() => {
-        element.style.animation = "";
-    }, 800);
-}
 
 // Laptop cards click handler
 const laptopCards = document.querySelectorAll(".laptop-card");
@@ -341,38 +243,16 @@ laptopCards.forEach((laptop) => {
     laptop.addEventListener("click", () => {
         const laptopName = laptop.querySelector("h3")?.innerText || "Laptop";
         showFloatingMessage(`🛒 Want to repair a ${laptopName} laptop? Book a repair below!`, "info");
-        
         const bookingForm = document.querySelector("#bookingForm");
         if (bookingForm) {
-            bookingForm.closest(".form-card").scrollIntoView({ 
-                behavior: "smooth", 
-                block: "center" 
-            });
-            
+            bookingForm.scrollIntoView({ behavior: "smooth", block: "center" });
             const deviceInput = document.querySelector("#bookingDevice");
-            if (deviceInput) {
-                deviceInput.value = laptopName;
-                highlightElement(deviceInput);
-            }
+            if (deviceInput) deviceInput.value = laptopName;
         }
     });
 });
 
-// Device images click handler
-const deviceImages = document.querySelectorAll(".device-img-card");
-deviceImages.forEach(device => {
-    device.addEventListener("click", () => {
-        const deviceName = device.querySelector("span")?.innerText || "Device";
-        showFloatingMessage(`📱 ${deviceName} repairs available. Check pricing table above!`, "info");
-        
-        const pricingTable = document.querySelector(".pricing-table");
-        if (pricingTable) {
-            highlightElement(pricingTable);
-        }
-    });
-});
-
-// BOOKING FORM
+// ========== FORM HANDLERS ==========
 const bookingFormElem = document.getElementById("bookingForm");
 if (bookingFormElem) {
     bookingFormElem.addEventListener("submit", function(e) {
@@ -386,13 +266,11 @@ if (bookingFormElem) {
             nameInput.focus();
             return;
         }
-        
         if (deviceInput && deviceInput.value.trim() === "") {
             showFloatingMessage("📱 Please tell us your device model.", "warning");
             deviceInput.focus();
             return;
         }
-        
         if (problemInput && problemInput.value.trim() === "") {
             showFloatingMessage("⚠️ Please describe the problem.", "warning");
             problemInput.focus();
@@ -404,7 +282,6 @@ if (bookingFormElem) {
     });
 }
 
-// CONTACT FORM
 const contactForm = document.getElementById("contactForm");
 if (contactForm) {
     contactForm.addEventListener("submit", function(e) {
@@ -418,13 +295,11 @@ if (contactForm) {
             nameField.focus();
             return;
         }
-        
         if (emailField && emailField.value && !emailField.value.includes("@")) {
             showFloatingMessage("📧 Please enter a valid email address.", "warning");
             emailField.focus();
             return;
         }
-        
         if (messageField && messageField.value.trim() === "") {
             showFloatingMessage("💬 Please enter your message.", "warning");
             messageField.focus();
@@ -436,20 +311,56 @@ if (contactForm) {
     });
 }
 
-// SELL BROKEN LAPTOP HANDLER
+// Sell broken laptop handler
 const sellBtn = document.getElementById("sellBrokenBtn");
 if (sellBtn) {
     sellBtn.addEventListener("click", () => {
         showFloatingMessage("💰 Great! WhatsApp us your laptop model for an instant quote!", "cash");
-        
         const whatsappBtn = document.querySelector(".whatsapp");
         if (whatsappBtn) {
-            highlightElement(whatsappBtn);
+            whatsappBtn.style.animation = "pulseGold 0.5s ease";
+            setTimeout(() => { whatsappBtn.style.animation = ""; }, 500);
         }
     });
 }
 
-// FLOATING MESSAGE FUNCTION
+// Submit review handler
+const submitReviewBtn = document.getElementById("submitReviewBtn");
+if (submitReviewBtn) {
+    submitReviewBtn.addEventListener("click", () => {
+        const nameInput = document.getElementById("reviewerName");
+        const reviewTextarea = document.getElementById("reviewText");
+        const selectedRating = document.querySelector('input[name="rating"]:checked');
+        
+        if (!nameInput || nameInput.value.trim() === "") {
+            showFloatingMessage("✨ Please enter your name.", "warning");
+            nameInput.focus();
+            return;
+        }
+        if (!selectedRating) {
+            showFloatingMessage("⭐ Please select a star rating.", "warning");
+            return;
+        }
+        if (!reviewTextarea || reviewTextarea.value.trim() === "") {
+            showFloatingMessage("💬 Please write your review.", "warning");
+            reviewTextarea.focus();
+            return;
+        }
+        if (reviewTextarea.value.trim().length < 5) {
+            showFloatingMessage("📝 Please write at least 5 characters.", "warning");
+            return;
+        }
+        
+        addReview(nameInput.value, selectedRating.value, reviewTextarea.value);
+        showFloatingMessage("🎉 Thank you for your review! 🎉", "success");
+        
+        nameInput.value = "";
+        reviewTextarea.value = "";
+        if (selectedRating) selectedRating.checked = false;
+    });
+}
+
+// ========== FLOATING MESSAGE FUNCTION ==========
 function showFloatingMessage(text, type = "info") {
     const existingToast = document.querySelector(".floating-toast");
     if (existingToast) existingToast.remove();
@@ -479,7 +390,7 @@ function showFloatingMessage(text, type = "info") {
     }, 3000);
 }
 
-// SCROLL ANIMATION OBSERVER
+// ========== SCROLL ANIMATION OBSERVER ==========
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -489,19 +400,43 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, { threshold: 0.1 });
 
-document.querySelectorAll(".card, .pricing-showcase, .gallery-item, .form-card, .laptop-card, .buy-broken-card, .doctor-profile").forEach(el => {
+document.querySelectorAll(".card, .pricing-showcase, .gallery-item, .form-card, .laptop-card, .buy-broken-card, .doctor-profile, .reviews-section").forEach(el => {
     el.style.opacity = "0";
     observer.observe(el);
 });
 
-// SEARCH PLACEHOLDER ENHANCEMENT
-if (searchInput) {
-    searchInput.addEventListener("focus", () => {
-        searchInput.placeholder = "e.g., 'iPhone screen', 'RAM', 'Battery' ...";
+// ========== INITIALIZATION ==========
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize collapsible sections
+    const iphoneScreenSection = document.getElementById('iphoneScreenPricing');
+    const iphoneBatterySection = document.getElementById('iphoneBatteryPricing');
+    const androidSection = document.getElementById('androidPricing');
+    
+    const sections = [iphoneScreenSection, iphoneBatterySection, androidSection];
+    sections.forEach(section => {
+        if (section) {
+            section.style.maxHeight = '0';
+            section.style.opacity = '0';
+            section.style.overflow = 'hidden';
+            section.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+            section.style.padding = '0 1.8rem';
+            section.style.margin = '0';
+            section.classList.remove('open');
+        }
     });
-    searchInput.addEventListener("blur", () => {
-        searchInput.placeholder = "Search repairs... (e.g., RAM, Screen, Battery)";
-    });
-}
-
-console.log("The-O-Hub — Fully functional repair website with click-to-pricing navigation!");
+    
+    // Load reviews
+    loadReviewsFromStorage();
+    
+    // Enhance search placeholder
+    if (searchInput) {
+        searchInput.addEventListener("focus", () => {
+            searchInput.placeholder = "e.g., 'iPhone screen', 'RAM', 'Battery' ...";
+        });
+        searchInput.addEventListener("blur", () => {
+            searchInput.placeholder = "Search repairs... (e.g., RAM, Screen, Battery)";
+        });
+    }
+    
+    console.log("The-O-Hub — Fully functional repair website with review system!");
+});

@@ -1,3 +1,281 @@
+// ========== JSONBin.io CONFIGURATION ==========
+// !!! REPLACE THESE WITH YOUR ACTUAL CREDENTIALS !!!
+const JSONBIN_BIN_ID = "69fa543936566621a82beb26";  // BIN ID
+const JSONBIN_API_KEY = "$2a$10$s4WYHMR7tDGutbSmYTI2FOZ4xUEvBgAiaxnS/DoUlUl/kFWi.DBDW";  // API KEY
+
+// ========== GLOBAL VARIABLES ==========
+let reviews = [];
+let isOnline = navigator.onLine;
+let syncInProgress = false;
+
+// ========== CLOUD SYNC FUNCTIONS ==========
+function updateCloudStatus(message, type = "syncing") {
+    const statusDiv = document.getElementById('cloudSyncStatus');
+    if (!statusDiv) return;
+    
+    if (type === "syncing") {
+        statusDiv.innerHTML = `<i class="fas fa-cloud-upload-alt fa-fw"></i> ${message}`;
+        statusDiv.className = "cloud-status";
+        statusDiv.style.color = "var(--primary)";
+    } else if (type === "success") {
+        statusDiv.innerHTML = `<i class="fas fa-check-circle fa-fw"></i> ${message}`;
+        statusDiv.className = "cloud-status success";
+        setTimeout(() => {
+            if (statusDiv.innerHTML.includes("Synced")) {
+                statusDiv.style.opacity = "0.5";
+            }
+        }, 3000);
+    } else if (type === "error") {
+        statusDiv.innerHTML = `<i class="fas fa-exclamation-triangle fa-fw"></i> ${message}`;
+        statusDiv.className = "cloud-status error";
+    }
+}
+
+// Load reviews from JSONBin cloud
+async function loadReviewsFromCloud() {
+    if (!JSONBIN_BIN_ID || JSONBIN_BIN_ID === "69fa543936566621a82beb26") {
+        console.warn("JSONBin not configured, using localStorage fallback");
+        loadReviewsFromLocal();
+        updateCloudStatus("Demo mode - Reviews saved locally only", "error");
+        return;
+    }
+    
+    updateCloudStatus("Syncing with cloud...", "syncing");
+    
+    try {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+            method: 'GET',
+            headers: {
+                'X-Master-Key': JSONBIN_API_KEY,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
+        const data = await response.json();
+        
+        if (data.record && data.record.reviews) {
+            reviews = data.record.reviews;
+            // Also save to localStorage as backup
+            localStorage.setItem('theOhubReviews', JSON.stringify(reviews));
+            updateCloudStatus(`✓ Synced ${reviews.length} reviews from cloud`, "success");
+        } else {
+            // No reviews in cloud yet, check localStorage
+            loadReviewsFromLocal();
+        }
+    } catch (error) {
+        console.error("Cloud sync error:", error);
+        updateCloudStatus("⚠️ Offline mode - Using local reviews", "error");
+        loadReviewsFromLocal();
+    }
+    
+    updateReviewUI();
+    updateDoctorStats();
+}
+
+// Load reviews from localStorage (fallback)
+function loadReviewsFromLocal() {
+    const stored = localStorage.getItem('theOhubReviews');
+    if (stored) {
+        reviews = JSON.parse(stored);
+    } else {
+        // Default reviews
+        reviews = [
+            { id: Date.now() + 1, name: "Thabo Mbeki", rating: 5, text: "Fixed my water-damaged iPhone in 2 hours! Amazing service!", date: new Date().toLocaleDateString() },
+            { id: Date.now() + 2, name: "Lerato Smith", rating: 4, text: "SSD upgrade made my laptop fly. Very professional.", date: new Date().toLocaleDateString() },
+            { id: Date.now() + 3, name: "Sipho Dlamini", rating: 5, text: "Best repair shop in Joburg! My MacBook works like new.", date: new Date().toLocaleDateString() }
+        ];
+        saveReviewsToLocal();
+    }
+}
+
+// Save reviews to JSONBin cloud
+async function saveReviewsToCloud() {
+    if (!JSONBIN_BIN_ID || JSONBIN_BIN_ID === "69fa543936566621a82beb26") {
+        saveReviewsToLocal();
+        return;
+    }
+    
+    if (syncInProgress) return;
+    syncInProgress = true;
+    
+    try {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+            method: 'PUT',
+            headers: {
+                'X-Master-Key': JSONBIN_API_KEY,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ reviews: reviews })
+        });
+        
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
+        updateCloudStatus("✓ Synced to cloud", "success");
+        // Also save to localStorage as backup
+        saveReviewsToLocal();
+    } catch (error) {
+        console.error("Cloud save error:", error);
+        updateCloudStatus("⚠️ Saved locally (offline)", "error");
+        saveReviewsToLocal();
+    } finally {
+        syncInProgress = false;
+    }
+}
+
+// Save reviews to localStorage (backup)
+function saveReviewsToLocal() {
+    localStorage.setItem('theOhubReviews', JSON.stringify(reviews));
+}
+
+// Main save function (tries cloud, falls back to local)
+async function saveReviews() {
+    await saveReviewsToCloud();
+}
+
+// ========== REVIEW SYSTEM WITH DOCTOR PROFILE SYNC ==========
+function updateDoctorStats() {
+    const doctorStatsContainer = document.getElementById('doctorStats');
+    if (!doctorStatsContainer) return;
+    
+    const totalReviews = reviews.length;
+    const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
+    const averageRating = totalReviews > 0 ? (totalRating / totalReviews).toFixed(2) : 0;
+    
+    // Calculate number of devices fixed (estimate based on reviews)
+    const devicesFixed = totalReviews * 2;
+    
+    // Update the doctor stats HTML
+    doctorStatsContainer.innerHTML = `
+        <div class="stat"><i class="fas fa-wrench"></i> ${devicesFixed}+ Devices Fixed</div>
+        <div class="stat"><i class="fas fa-star"></i> ${averageRating} ⭐ (${totalReviews} reviews)</div>
+        <div class="stat"><i class="fas fa-certificate"></i> Apple & Samsung Certified</div>
+    `;
+    
+    // Update the doctor-title area with live rating
+    const doctorTitle = document.querySelector('.doctor-title');
+    if (doctorTitle) {
+        let existingRating = doctorTitle.querySelector('.live-rating');
+        if (!existingRating) {
+            existingRating = document.createElement('span');
+            existingRating.className = 'live-rating';
+            doctorTitle.appendChild(existingRating);
+        }
+        if (totalReviews > 0) {
+            existingRating.innerHTML = ` | ⭐ ${averageRating}/5 (${totalReviews} reviews)`;
+        } else {
+            existingRating.innerHTML = ` | ⭐ No reviews yet`;
+        }
+    }
+    
+    // Update doctor badge based on review count
+    const doctorBadge = document.querySelector('.doctor-badge');
+    if (doctorBadge) {
+        if (totalReviews >= 10) {
+            doctorBadge.innerHTML = '<i class="fas fa-check-circle"></i> Verified Pro';
+            doctorBadge.style.background = '#10b981';
+        } else if (totalReviews >= 5) {
+            doctorBadge.innerHTML = '<i class="fas fa-star"></i> Rising Star';
+            doctorBadge.style.background = '#fbbf24';
+            doctorBadge.style.color = '#0f172a';
+        } else {
+            doctorBadge.innerHTML = '<i class="fas fa-stethoscope"></i> Repair Doctor';
+            doctorBadge.style.background = 'var(--primary)';
+            doctorBadge.style.color = '#0f172a';
+        }
+    }
+}
+
+function updateReviewUI() {
+    const reviewsContainer = document.getElementById('reviewsList');
+    const avgRatingSpan = document.getElementById('avgRating');
+    const reviewCountSpan = document.getElementById('reviewCount');
+    const avgStarsDisplay = document.getElementById('avgStarsDisplay');
+    
+    if(reviews.length === 0) {
+        reviewsContainer.innerHTML = '<div class="empty-reviews">✨ No reviews yet. Be the first to share your experience! ✨</div>';
+        avgRatingSpan.innerText = '0.0';
+        reviewCountSpan.innerText = '0';
+        avgStarsDisplay.innerHTML = '☆☆☆☆☆';
+        updateDoctorStats();
+        return;
+    }
+    
+    const sortedReviews = [...reviews].reverse();
+    reviewsContainer.innerHTML = sortedReviews.map(rev => `
+        <div class="review-card" data-id="${rev.id}">
+            <div class="reviewer-name"><i class="fas fa-user-circle"></i> ${escapeHtml(rev.name)}</div>
+            <div class="review-stars">${'★'.repeat(rev.rating)}${'☆'.repeat(5-rev.rating)}</div>
+            <div class="review-text">${escapeHtml(rev.text)}</div>
+            <div class="review-date">
+                <span><i class="far fa-calendar-alt"></i> ${rev.date}</span>
+                
+            </div>
+        </div>
+    `).join('');
+    
+    document.querySelectorAll('.delete-review').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const id = parseInt(btn.getAttribute('data-id'));
+            await deleteReviewById(id);
+        });
+    });
+    
+    const total = reviews.reduce((sum, r) => sum + r.rating, 0);
+    const avg = total / reviews.length;
+    avgRatingSpan.innerText = avg.toFixed(1);
+    reviewCountSpan.innerText = reviews.length;
+    const fullStars = Math.floor(avg);
+    const halfStar = (avg - fullStars) >= 0.5 ? 1 : 0;
+    let starsHtml = '★'.repeat(fullStars) + (halfStar ? '½' : '') + '☆'.repeat(5 - fullStars - halfStar);
+    avgStarsDisplay.innerHTML = starsHtml;
+    
+    updateDoctorStats();
+}
+
+async function deleteReviewById(id) {
+    reviews = reviews.filter(r => r.id !== id);
+    await saveReviews();
+    updateReviewUI();
+    showFloatingMessage('🗑️ Review deleted successfully!', 'success');
+}
+
+async function addReview(name, rating, text) {
+    const newReview = {
+        id: Date.now(),
+        name: name.trim(),
+        rating: parseInt(rating),
+        text: text.trim(),
+        date: new Date().toLocaleDateString()
+    };
+    reviews.push(newReview);
+    await saveReviews();
+    updateReviewUI();
+    
+    // Show special message for milestone reviews
+    if (reviews.length === 5) {
+        showFloatingMessage('🎉 5 reviews! You\'re helping us grow! 🎉', 'success');
+    } else if (reviews.length === 10) {
+        showFloatingMessage('🏆 10 reviews! Thank you for your trust! 🏆', 'success');
+    } else {
+        showFloatingMessage('🎉 Thank you for your review! 🎉', 'success');
+    }
+    
+    return true;
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
 // ========== COLLAPSIBLE PRICING SECTIONS TOGGLE ==========
 let openSections = {
     iphoneScreen: false,
@@ -70,104 +348,6 @@ function togglePricingSection(sectionName) {
         else message = '🤖 Contact us for Android repair quotes!';
         showFloatingMessage(message, 'info');
     }
-}
-
-// ========== REVIEW SYSTEM ==========
-let reviews = [];
-
-function loadReviewsFromStorage() {
-    const stored = localStorage.getItem('theOhubReviews');
-    if(stored) {
-        reviews = JSON.parse(stored);
-    } else {
-        reviews = [
-            { id: Date.now() + 1, name: "Thabo Mbeki", rating: 5, text: "Fixed my water-damaged iPhone in 2 hours! Amazing service!", date: new Date().toLocaleDateString() },
-            { id: Date.now() + 2, name: "Lerato Smith", rating: 4, text: "SSD upgrade made my laptop fly. Very professional.", date: new Date().toLocaleDateString() },
-            { id: Date.now() + 3, name: "Sipho Dlamini", rating: 5, text: "Best repair shop in Joburg! My MacBook works like new.", date: new Date().toLocaleDateString() }
-        ];
-        saveReviewsToStorage();
-    }
-    updateReviewUI();
-}
-
-function saveReviewsToStorage() {
-    localStorage.setItem('theOhubReviews', JSON.stringify(reviews));
-}
-
-function updateReviewUI() {
-    const reviewsContainer = document.getElementById('reviewsList');
-    const avgRatingSpan = document.getElementById('avgRating');
-    const reviewCountSpan = document.getElementById('reviewCount');
-    const avgStarsDisplay = document.getElementById('avgStarsDisplay');
-    
-    if(reviews.length === 0) {
-        reviewsContainer.innerHTML = '<div class="empty-reviews">✨ No reviews yet. Be the first to share your experience! ✨</div>';
-        avgRatingSpan.innerText = '0.0';
-        reviewCountSpan.innerText = '0';
-        avgStarsDisplay.innerHTML = '☆☆☆☆☆';
-        return;
-    }
-    
-    const sortedReviews = [...reviews].reverse();
-    reviewsContainer.innerHTML = sortedReviews.map(rev => `
-        <div class="review-card" data-id="${rev.id}">
-            <div class="reviewer-name"><i class="fas fa-user-circle"></i> ${escapeHtml(rev.name)}</div>
-            <div class="review-stars">${'★'.repeat(rev.rating)}${'☆'.repeat(5-rev.rating)}</div>
-            <div class="review-text">${escapeHtml(rev.text)}</div>
-            <div class="review-date">
-                <span><i class="far fa-calendar-alt"></i> ${rev.date}</span>
-                <button class="delete-review" data-id="${rev.id}"><i class="fas fa-trash-alt"></i> Delete</button>
-            </div>
-        </div>
-    `).join('');
-    
-    document.querySelectorAll('.delete-review').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const id = parseInt(btn.getAttribute('data-id'));
-            deleteReviewById(id);
-        });
-    });
-    
-    const total = reviews.reduce((sum, r) => sum + r.rating, 0);
-    const avg = total / reviews.length;
-    avgRatingSpan.innerText = avg.toFixed(1);
-    reviewCountSpan.innerText = reviews.length;
-    const fullStars = Math.floor(avg);
-    const halfStar = (avg - fullStars) >= 0.5 ? 1 : 0;
-    let starsHtml = '★'.repeat(fullStars) + (halfStar ? '½' : '') + '☆'.repeat(5 - fullStars - halfStar);
-    avgStarsDisplay.innerHTML = starsHtml;
-}
-
-function deleteReviewById(id) {
-    reviews = reviews.filter(r => r.id !== id);
-    saveReviewsToStorage();
-    updateReviewUI();
-    showFloatingMessage('🗑️ Review deleted successfully!', 'success');
-}
-
-function addReview(name, rating, text) {
-    const newReview = {
-        id: Date.now(),
-        name: name.trim(),
-        rating: parseInt(rating),
-        text: text.trim(),
-        date: new Date().toLocaleDateString()
-    };
-    reviews.push(newReview);
-    saveReviewsToStorage();
-    updateReviewUI();
-    return true;
-}
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
 }
 
 // ========== SEARCH FUNCTIONALITY ==========
@@ -327,7 +507,7 @@ if (sellBtn) {
 // Submit review handler
 const submitReviewBtn = document.getElementById("submitReviewBtn");
 if (submitReviewBtn) {
-    submitReviewBtn.addEventListener("click", () => {
+    submitReviewBtn.addEventListener("click", async () => {
         const nameInput = document.getElementById("reviewerName");
         const reviewTextarea = document.getElementById("reviewText");
         const selectedRating = document.querySelector('input[name="rating"]:checked');
@@ -351,9 +531,9 @@ if (submitReviewBtn) {
             return;
         }
         
-        addReview(nameInput.value, selectedRating.value, reviewTextarea.value);
-        showFloatingMessage("🎉 Thank you for your review! 🎉", "success");
+        await addReview(nameInput.value, selectedRating.value, reviewTextarea.value);
         
+        // Clear form
         nameInput.value = "";
         reviewTextarea.value = "";
         if (selectedRating) selectedRating.checked = false;
@@ -405,8 +585,19 @@ document.querySelectorAll(".card, .pricing-showcase, .gallery-item, .form-card, 
     observer.observe(el);
 });
 
+// ========== ONLINE/OFFLINE DETECTION ==========
+window.addEventListener('online', () => {
+    showFloatingMessage("🌐 Back online! Syncing reviews...", "success");
+    loadReviewsFromCloud();
+});
+
+window.addEventListener('offline', () => {
+    showFloatingMessage("📡 You're offline. Reviews saved locally.", "warning");
+    updateCloudStatus("Offline mode", "error");
+});
+
 // ========== INITIALIZATION ==========
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // Initialize collapsible sections
     const iphoneScreenSection = document.getElementById('iphoneScreenPricing');
     const iphoneBatterySection = document.getElementById('iphoneBatteryPricing');
@@ -425,8 +616,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Load reviews
-    loadReviewsFromStorage();
+    // Load reviews from cloud
+    await loadReviewsFromCloud();
     
     // Enhance search placeholder
     if (searchInput) {
@@ -438,5 +629,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    console.log("The-O-Hub — Fully functional repair website with review system!");
+    // Add offline indicator if needed
+    if (!navigator.onLine) {
+        const offlineBadge = document.createElement('div');
+        offlineBadge.className = 'offline-badge';
+        offlineBadge.innerHTML = '<i class="fas fa-wifi"></i> Offline Mode';
+        document.body.appendChild(offlineBadge);
+    }
+    
+    console.log("The-O-Hub — Cloud-synced reviews & doctor profile connected!");
 });

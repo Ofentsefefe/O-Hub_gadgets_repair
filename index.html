@@ -162,7 +162,7 @@
         </div>
     </div>
 
-    <!-- DEVICE PRICING - iPhone Screens (COLLAPSIBLE BUTTON SECTION) -->
+    <!-- DEVICE PRICING - iPhone Screens -->
     <div class="section-header">
         <h2><i class="fab fa-apple"></i> iPhone Screen Repair Pricing</h2>
         <div class="section-line"></div>
@@ -317,15 +317,22 @@
     <div class="reviews-section" id="reviewsSection">
         <div class="reviews-header">
             <h2><i class="fas fa-star"></i> Reviews</h2>
-            <p>Real reviews from our  customers</p>
+            <p>Real reviews from our customers</p>
             <div id="cloudSyncStatus" class="cloud-status">
-                <i class="fas fa-cloud-upload-alt"></i> Syncing with cloud...
+                <i class="fas fa-cloud-upload-alt"></i> Loading reviews...
             </div>
             <div class="rating-summary" id="ratingSummary">
                 <span class="average-rating" id="avgRating">0.0</span>
                 <div class="stars-summary" id="avgStarsDisplay"></div>
                 <span>(<span id="reviewCount">0</span> reviews)</span>
             </div>
+        </div>
+        
+        <!-- Admin Login Button (Only you can see delete buttons after login) -->
+        <div style="text-align: right; margin-bottom: 1rem;">
+            <button id="adminLoginBtn" class="btn-glow small" style="width: auto; background: #475569;">
+               <!-- <i class="fas fa-lock"></i> Admin Login --> 
+            </button>
         </div>
         
         <div class="review-form-card">
@@ -344,7 +351,11 @@
             </div>
         </div>
         
-        <div class="reviews-list" id="reviewsList"></div>
+        <div class="reviews-list" id="reviewsList">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i> Loading reviews...
+            </div>
+        </div>
     </div>
 
     <!-- BOOKING & CONTACT -->
@@ -369,7 +380,7 @@
         </div>
     </div>
 
-    <!-- REPAIR DOCTOR PROFILE (FULLY SYNCED WITH REVIEWS) -->
+    <!-- REPAIR DOCTOR PROFILE -->
     <div class="doctor-profile">
         <div class="doctor-image">
             <img src="src/images/ofentse_picture_pp.jpeg" alt="Dr. Ofentse - Your Repair Doctor">

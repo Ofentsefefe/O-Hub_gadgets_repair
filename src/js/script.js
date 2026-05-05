@@ -26,7 +26,7 @@ function updateCloudStatus(message, type = "syncing") {
 
 // Load reviews from JSONBin cloud
 async function loadReviewsFromCloud() {
-    updateCloudStatus("Loading reviews from cloud...", "syncing");
+    updateCloudStatus("Reviews Loaded ", "syncing");
     
     // Show loading spinner
     const reviewsContainer = document.getElementById('reviewsList');

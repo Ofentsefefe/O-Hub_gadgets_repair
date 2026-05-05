@@ -152,7 +152,7 @@ function updateDoctorStats() {
         <div class="stat"><i class="fas fa-certificate"></i> Apple & Samsung Certified</div>
     `;
     
-    // Update the doctor-title area with live rating
+    // Updating the doctor-title area with live rating
     const doctorTitle = document.querySelector('.doctor-title');
     if (doctorTitle) {
         let existingRating = doctorTitle.querySelector('.live-rating');
@@ -168,7 +168,7 @@ function updateDoctorStats() {
         }
     }
     
-    // Update doctor badge based on review count
+    // Updating doctor badge based on review count
     const doctorBadge = document.querySelector('.doctor-badge');
     if (doctorBadge) {
         if (totalReviews >= 10) {

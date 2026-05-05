@@ -1,45 +1,38 @@
 // ========== JSONBin.io CONFIGURATION ==========
-const JSONBIN_BIN_ID = "69fa543936566621a82beb26";  // BIN ID
-const JSONBIN_API_KEY = "$2a$10$s4WYHMR7tDGutbSmYTI2FOZ4xUEvBgAiaxnS/DoUlUl/kFWi.DBDW";  // API KEY
+const JSONBIN_BIN_ID = "69fa543936566621a82beb26";
+const JSONBIN_API_KEY = "$2a$10$s4WYHMR7tDGutbSmYTI2FOZ4xUEvBgAiaxnS/DoUlUl/kFWi.DBDW";
 
 // ========== GLOBAL VARIABLES ==========
 let reviews = [];
-let isOnline = navigator.onLine;
-let syncInProgress = false;
+let isAdmin = false;
+const ADMIN_PASSWORD = "TheOHubAdmin2025"; // Change this to your own password!
 
 // ========== CLOUD SYNC FUNCTIONS ==========
 function updateCloudStatus(message, type = "syncing") {
     const statusDiv = document.getElementById('cloudSyncStatus');
     if (!statusDiv) return;
     
-    if (type === "syncing") {
-        statusDiv.innerHTML = `<i class="fas fa-cloud-upload-alt fa-fw"></i> ${message}`;
-        statusDiv.className = "cloud-status";
-        statusDiv.style.color = "var(--primary)";
-    } else if (type === "success") {
-        statusDiv.innerHTML = `<i class="fas fa-check-circle fa-fw"></i> ${message}`;
-        statusDiv.className = "cloud-status success";
+    statusDiv.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-triangle' : 'fa-cloud-upload-alt'}"></i> ${message}`;
+    statusDiv.className = `cloud-status ${type}`;
+    
+    if (type === "success") {
         setTimeout(() => {
             if (statusDiv.innerHTML.includes("Synced")) {
                 statusDiv.style.opacity = "0.5";
             }
         }, 3000);
-    } else if (type === "error") {
-        statusDiv.innerHTML = `<i class="fas fa-exclamation-triangle fa-fw"></i> ${message}`;
-        statusDiv.className = "cloud-status error";
     }
 }
 
 // Load reviews from JSONBin cloud
 async function loadReviewsFromCloud() {
-    if (!JSONBIN_BIN_ID || JSONBIN_BIN_ID === "69fa543936566621a82beb26") {
-        console.warn("JSONBin not configured, using localStorage fallback");
-        loadReviewsFromLocal();
-        updateCloudStatus("Demo mode - Reviews saved locally only", "error");
-        return;
-    }
+    updateCloudStatus("Loading reviews from cloud...", "syncing");
     
-    updateCloudStatus("Syncing with cloud...", "syncing");
+    // Show loading spinner
+    const reviewsContainer = document.getElementById('reviewsList');
+    if (reviewsContainer) {
+        reviewsContainer.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading reviews...</div>';
+    }
     
     try {
         const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
@@ -54,18 +47,18 @@ async function loadReviewsFromCloud() {
         
         const data = await response.json();
         
-        if (data.record && data.record.reviews) {
+        if (data.record && data.record.reviews && Array.isArray(data.record.reviews)) {
             reviews = data.record.reviews;
             // Also save to localStorage as backup
             localStorage.setItem('theOhubReviews', JSON.stringify(reviews));
-            updateCloudStatus(`✓ Synced ${reviews.length} reviews from cloud`, "success");
+            updateCloudStatus(`✓ Loaded ${reviews.length} reviews from cloud`, "success");
         } else {
-            // No reviews in cloud yet, check localStorage
+            // No reviews in cloud yet, use localStorage or defaults
             loadReviewsFromLocal();
         }
     } catch (error) {
         console.error("Cloud sync error:", error);
-        updateCloudStatus("⚠️ Offline mode - Using local reviews", "error");
+        updateCloudStatus("⚠️ Using local reviews (cloud unavailable)", "error");
         loadReviewsFromLocal();
     }
     
@@ -91,11 +84,6 @@ function loadReviewsFromLocal() {
 
 // Save reviews to JSONBin cloud
 async function saveReviewsToCloud() {
-    if (!JSONBIN_BIN_ID || JSONBIN_BIN_ID === "69fa543936566621a82beb26") {
-        saveReviewsToLocal();
-        return;
-    }
-    
     if (syncInProgress) return;
     syncInProgress = true;
     
@@ -112,7 +100,6 @@ async function saveReviewsToCloud() {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         updateCloudStatus("✓ Synced to cloud", "success");
-        // Also save to localStorage as backup
         saveReviewsToLocal();
     } catch (error) {
         console.error("Cloud save error:", error);
@@ -123,17 +110,19 @@ async function saveReviewsToCloud() {
     }
 }
 
+let syncInProgress = false;
+
 // Save reviews to localStorage (backup)
 function saveReviewsToLocal() {
     localStorage.setItem('theOhubReviews', JSON.stringify(reviews));
 }
 
-// Main save function (tries cloud, falls back to local)
+// Main save function
 async function saveReviews() {
     await saveReviewsToCloud();
 }
 
-// ========== REVIEW SYSTEM WITH DOCTOR PROFILE SYNC ==========
+// ========== REVIEW SYSTEM ==========
 function updateDoctorStats() {
     const doctorStatsContainer = document.getElementById('doctorStats');
     if (!doctorStatsContainer) return;
@@ -141,18 +130,15 @@ function updateDoctorStats() {
     const totalReviews = reviews.length;
     const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
     const averageRating = totalReviews > 0 ? (totalRating / totalReviews).toFixed(2) : 0;
-    
-    // Calculate number of devices fixed (estimate based on reviews)
     const devicesFixed = totalReviews * 2;
     
-    // Update the doctor stats HTML
     doctorStatsContainer.innerHTML = `
         <div class="stat"><i class="fas fa-wrench"></i> ${devicesFixed}+ Devices Fixed</div>
         <div class="stat"><i class="fas fa-star"></i> ${averageRating} ⭐ (${totalReviews} reviews)</div>
         <div class="stat"><i class="fas fa-certificate"></i> Apple & Samsung Certified</div>
     `;
     
-    // Updating the doctor-title area with live rating
+    // Update doctor title with live rating
     const doctorTitle = document.querySelector('.doctor-title');
     if (doctorTitle) {
         let existingRating = doctorTitle.querySelector('.live-rating');
@@ -168,7 +154,7 @@ function updateDoctorStats() {
         }
     }
     
-    // Updating doctor badge based on review count
+    // Update doctor badge based on review count
     const doctorBadge = document.querySelector('.doctor-badge');
     if (doctorBadge) {
         if (totalReviews >= 10) {
@@ -192,11 +178,13 @@ function updateReviewUI() {
     const reviewCountSpan = document.getElementById('reviewCount');
     const avgStarsDisplay = document.getElementById('avgStarsDisplay');
     
+    if(!reviewsContainer) return;
+    
     if(reviews.length === 0) {
         reviewsContainer.innerHTML = '<div class="empty-reviews">✨ No reviews yet. Be the first to share your experience! ✨</div>';
-        avgRatingSpan.innerText = '0.0';
-        reviewCountSpan.innerText = '0';
-        avgStarsDisplay.innerHTML = '☆☆☆☆☆';
+        if(avgRatingSpan) avgRatingSpan.innerText = '0.0';
+        if(reviewCountSpan) reviewCountSpan.innerText = '0';
+        if(avgStarsDisplay) avgStarsDisplay.innerHTML = '☆☆☆☆☆';
         updateDoctorStats();
         return;
     }
@@ -209,27 +197,33 @@ function updateReviewUI() {
             <div class="review-text">${escapeHtml(rev.text)}</div>
             <div class="review-date">
                 <span><i class="far fa-calendar-alt"></i> ${rev.date}</span>
-                
+                ${isAdmin ? `<button class="delete-review" data-id="${rev.id}"><i class="fas fa-trash-alt"></i> Delete</button>` : ''}
             </div>
         </div>
     `).join('');
     
-    document.querySelectorAll('.delete-review').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            const id = parseInt(btn.getAttribute('data-id'));
-            await deleteReviewById(id);
+    // Only attach delete events if admin
+    if (isAdmin) {
+        document.querySelectorAll('.delete-review').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const id = parseInt(btn.getAttribute('data-id'));
+                if (confirm('Are you sure you want to delete this review?')) {
+                    await deleteReviewById(id);
+                }
+            });
         });
-    });
+    }
     
     const total = reviews.reduce((sum, r) => sum + r.rating, 0);
     const avg = total / reviews.length;
-    avgRatingSpan.innerText = avg.toFixed(1);
-    reviewCountSpan.innerText = reviews.length;
+    if(avgRatingSpan) avgRatingSpan.innerText = avg.toFixed(1);
+    if(reviewCountSpan) reviewCountSpan.innerText = reviews.length;
+    
     const fullStars = Math.floor(avg);
     const halfStar = (avg - fullStars) >= 0.5 ? 1 : 0;
     let starsHtml = '★'.repeat(fullStars) + (halfStar ? '½' : '') + '☆'.repeat(5 - fullStars - halfStar);
-    avgStarsDisplay.innerHTML = starsHtml;
+    if(avgStarsDisplay) avgStarsDisplay.innerHTML = starsHtml;
     
     updateDoctorStats();
 }
@@ -253,7 +247,6 @@ async function addReview(name, rating, text) {
     await saveReviews();
     updateReviewUI();
     
-    // Show special message for milestone reviews
     if (reviews.length === 5) {
         showFloatingMessage('🎉 5 reviews! You\'re helping us grow! 🎉', 'success');
     } else if (reviews.length === 10) {
@@ -275,7 +268,26 @@ function escapeHtml(str) {
     });
 }
 
-// ========== COLLAPSIBLE PRICING SECTIONS TOGGLE ==========
+// ========== ADMIN LOGIN ==========
+function setupAdminLogin() {
+    const adminBtn = document.getElementById('adminLoginBtn');
+    if (!adminBtn) return;
+    
+    adminBtn.addEventListener('click', () => {
+        const password = prompt('Enter admin password:');
+        if (password === ADMIN_PASSWORD) {
+            isAdmin = true;
+            adminBtn.innerHTML = '<i class="fas fa-unlock-alt"></i> Admin Mode Active';
+            adminBtn.style.background = '#10b981';
+            updateReviewUI();
+            showFloatingMessage('✅ Admin mode activated! Delete buttons now visible.', 'success');
+        } else if (password !== null) {
+            showFloatingMessage('❌ Wrong password!', 'error');
+        }
+    });
+}
+
+// ========== TOGGLE PRICING SECTIONS ==========
 let openSections = {
     iphoneScreen: false,
     iphoneBattery: false,
@@ -333,19 +345,8 @@ function togglePricingSection(sectionName) {
                 arrow.classList.add('fa-chevron-up');
             }
             toggleBtn.classList.add('active');
-            
-            toggleBtn.style.animation = 'shake 0.5s ease';
-            setTimeout(() => {
-                if (toggleBtn) toggleBtn.style.animation = '';
-            }, 500);
         }
         openSections[sectionName] = true;
-        
-        let message = '';
-        if (sectionName === 'iphoneScreen') message = '📱 iPhone screen pricing table expanded!';
-        else if (sectionName === 'iphoneBattery') message = '🔋 iPhone battery pricing table expanded!';
-        else message = '🤖 Contact us for Android repair quotes!';
-        showFloatingMessage(message, 'info');
     }
 }
 
@@ -364,27 +365,26 @@ if (searchInput) {
             
             if (term === "" || matches) {
                 card.style.display = "block";
-                card.style.animation = "fadeSlideUp 0.3s ease-out";
             } else {
                 card.style.display = "none";
             }
         });
         
+        let noResultMsg = document.querySelector(".no-result-message");
         const visibleCards = document.querySelectorAll(".card[style='display: block'], .card:not([style*='none'])");
+        
         if (visibleCards.length === 0 && term !== "") {
-            let noResultMsg = document.querySelector(".no-result-message");
             if (!noResultMsg) {
                 const msg = document.createElement("div");
                 msg.className = "no-result-message";
-                msg.innerHTML = `<i class="fas fa-search"></i> No repairs found for "${term}" — try RAM, SSD, Screen, iPhone, Battery`;
+                msg.innerHTML = `<i class="fas fa-search"></i> No repairs found for "${term}"`;
                 msg.style.textAlign = "center";
                 msg.style.padding = "2rem";
                 msg.style.color = "#94a3b8";
                 document.querySelector(".cards").after(msg);
             }
-        } else {
-            const existingMsg = document.querySelector(".no-result-message");
-            if (existingMsg) existingMsg.remove();
+        } else if (noResultMsg) {
+            noResultMsg.remove();
         }
     });
 }
@@ -393,25 +393,9 @@ if (searchInput) {
 serviceCards.forEach(card => {
     const titleElement = card.querySelector("h3");
     if (titleElement) {
-        const cardTitle = titleElement.innerText;
         card.addEventListener("click", (e) => {
             e.stopPropagation();
-            let message = `🔧 ${cardTitle} - Click the pricing button above for details!`;
-            showFloatingMessage(message, "info");
-            
-            if (cardTitle.includes("iPhone Screens")) {
-                const btn = document.getElementById("iphoneScreenToggleBtn");
-                if (btn) btn.scrollIntoView({ behavior: "smooth", block: "start" });
-            } else if (cardTitle.includes("iPhone Battery")) {
-                const btn = document.getElementById("iphoneBatteryToggleBtn");
-                if (btn) btn.scrollIntoView({ behavior: "smooth", block: "start" });
-            } else if (cardTitle.includes("Android")) {
-                const btn = document.getElementById("androidToggleBtn");
-                if (btn) btn.scrollIntoView({ behavior: "smooth", block: "start" });
-            } else {
-                const bookingForm = document.querySelector("#bookingForm");
-                if (bookingForm) bookingForm.scrollIntoView({ behavior: "smooth", block: "center" });
-            }
+            showFloatingMessage(`🔧 ${titleElement.innerText} - Contact us for pricing!`, "info");
         });
     }
 });
@@ -425,8 +409,6 @@ laptopCards.forEach((laptop) => {
         const bookingForm = document.querySelector("#bookingForm");
         if (bookingForm) {
             bookingForm.scrollIntoView({ behavior: "smooth", block: "center" });
-            const deviceInput = document.querySelector("#bookingDevice");
-            if (deviceInput) deviceInput.value = laptopName;
         }
     });
 });
@@ -440,19 +422,16 @@ if (bookingFormElem) {
         const deviceInput = document.querySelector("#bookingDevice");
         const problemInput = document.querySelector("#bookingProblem");
         
-        if (nameInput && nameInput.value.trim() === "") {
-            showFloatingMessage("✨ Please enter your name to book a repair.", "warning");
-            nameInput.focus();
+        if (!nameInput?.value.trim()) {
+            showFloatingMessage("✨ Please enter your name.", "warning");
             return;
         }
-        if (deviceInput && deviceInput.value.trim() === "") {
+        if (!deviceInput?.value.trim()) {
             showFloatingMessage("📱 Please tell us your device model.", "warning");
-            deviceInput.focus();
             return;
         }
-        if (problemInput && problemInput.value.trim() === "") {
+        if (!problemInput?.value.trim()) {
             showFloatingMessage("⚠️ Please describe the problem.", "warning");
-            problemInput.focus();
             return;
         }
         
@@ -465,26 +444,6 @@ const contactForm = document.getElementById("contactForm");
 if (contactForm) {
     contactForm.addEventListener("submit", function(e) {
         e.preventDefault();
-        const nameField = document.querySelector("#contactName");
-        const emailField = document.querySelector("#contactEmail");
-        const messageField = document.querySelector("#contactMessage");
-        
-        if (nameField && nameField.value.trim() === "") {
-            showFloatingMessage("📝 Please enter your name.", "warning");
-            nameField.focus();
-            return;
-        }
-        if (emailField && emailField.value && !emailField.value.includes("@")) {
-            showFloatingMessage("📧 Please enter a valid email address.", "warning");
-            emailField.focus();
-            return;
-        }
-        if (messageField && messageField.value.trim() === "") {
-            showFloatingMessage("💬 Please enter your message.", "warning");
-            messageField.focus();
-            return;
-        }
-        
         showFloatingMessage("📨 Message sent! We'll reply within 2 hours.", "success");
         this.reset();
     });
@@ -495,11 +454,6 @@ const sellBtn = document.getElementById("sellBrokenBtn");
 if (sellBtn) {
     sellBtn.addEventListener("click", () => {
         showFloatingMessage("💰 Great! WhatsApp us your laptop model for an instant quote!", "cash");
-        const whatsappBtn = document.querySelector(".whatsapp");
-        if (whatsappBtn) {
-            whatsappBtn.style.animation = "pulseGold 0.5s ease";
-            setTimeout(() => { whatsappBtn.style.animation = ""; }, 500);
-        }
     });
 }
 
@@ -511,18 +465,18 @@ if (submitReviewBtn) {
         const reviewTextarea = document.getElementById("reviewText");
         const selectedRating = document.querySelector('input[name="rating"]:checked');
         
-        if (!nameInput || nameInput.value.trim() === "") {
+        if (!nameInput?.value.trim()) {
             showFloatingMessage("✨ Please enter your name.", "warning");
-            nameInput.focus();
+            nameInput?.focus();
             return;
         }
         if (!selectedRating) {
             showFloatingMessage("⭐ Please select a star rating.", "warning");
             return;
         }
-        if (!reviewTextarea || reviewTextarea.value.trim() === "") {
+        if (!reviewTextarea?.value.trim()) {
             showFloatingMessage("💬 Please write your review.", "warning");
-            reviewTextarea.focus();
+            reviewTextarea?.focus();
             return;
         }
         if (reviewTextarea.value.trim().length < 5) {
@@ -532,14 +486,13 @@ if (submitReviewBtn) {
         
         await addReview(nameInput.value, selectedRating.value, reviewTextarea.value);
         
-        // Clear form
         nameInput.value = "";
         reviewTextarea.value = "";
         if (selectedRating) selectedRating.checked = false;
     });
 }
 
-// ========== FLOATING MESSAGE FUNCTION ==========
+// ========== FLOATING MESSAGE ==========
 function showFloatingMessage(text, type = "info") {
     const existingToast = document.querySelector(".floating-toast");
     if (existingToast) existingToast.remove();
@@ -551,7 +504,6 @@ function showFloatingMessage(text, type = "info") {
     if (type === "cash") {
         toast.style.background = "linear-gradient(135deg, #fbbf24, #f59e0b)";
         toast.style.color = "#0f172a";
-        toast.style.border = "none";
     } else if (type === "warning") {
         toast.style.borderColor = "#f97316";
         toast.style.color = "#f97316";
@@ -564,12 +516,11 @@ function showFloatingMessage(text, type = "info") {
     
     setTimeout(() => {
         toast.style.opacity = "0";
-        toast.style.transition = "0.3s";
         setTimeout(() => toast.remove(), 400);
     }, 3000);
 }
 
-// ========== SCROLL ANIMATION OBSERVER ==========
+// ========== SCROLL ANIMATION ==========
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -584,26 +535,12 @@ document.querySelectorAll(".card, .pricing-showcase, .gallery-item, .form-card, 
     observer.observe(el);
 });
 
-// ========== ONLINE/OFFLINE DETECTION ==========
-window.addEventListener('online', () => {
-    showFloatingMessage("🌐 Back online! Syncing reviews...", "success");
-    loadReviewsFromCloud();
-});
-
-window.addEventListener('offline', () => {
-    showFloatingMessage("📡 You're offline. Reviews saved locally.", "warning");
-    updateCloudStatus("Offline mode", "error");
-});
-
 // ========== INITIALIZATION ==========
 document.addEventListener('DOMContentLoaded', async function() {
     // Initialize collapsible sections
-    const iphoneScreenSection = document.getElementById('iphoneScreenPricing');
-    const iphoneBatterySection = document.getElementById('iphoneBatteryPricing');
-    const androidSection = document.getElementById('androidPricing');
-    
-    const sections = [iphoneScreenSection, iphoneBatterySection, androidSection];
-    sections.forEach(section => {
+    const sections = ['iphoneScreenPricing', 'iphoneBatteryPricing', 'androidPricing'];
+    sections.forEach(id => {
+        const section = document.getElementById(id);
         if (section) {
             section.style.maxHeight = '0';
             section.style.opacity = '0';
@@ -617,6 +554,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Load reviews from cloud
     await loadReviewsFromCloud();
+    
+    // Setup admin login
+    setupAdminLogin();
     
     // Enhance search placeholder
     if (searchInput) {
@@ -636,5 +576,5 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.body.appendChild(offlineBadge);
     }
     
-    console.log("The-O-Hub — Cloud-synced reviews & doctor profile connected!");
+    console.log("The-O-Hub — Fully loaded with cloud sync!");
 });

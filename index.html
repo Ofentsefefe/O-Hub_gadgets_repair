@@ -183,7 +183,9 @@
         <div class="pricing-table-wrapper">
             <div class="table-responsive">
                 <table class="pricing-table">
-                    <thead><tr><th>Device</th><th>Repair</th><th>Price (ZAR)</th></tr></thead>
+                    <thead>
+                        <tr><th>Device</th><th>Repair</th><th>Price (ZAR)</th></tr>
+                    </thead>
                     <tbody>
                         <tr><td><i class="fab fa-apple"></i> iPhone 7 plus</td><td>Screen Replacement</td><td>R500</td></tr>
                         <tr><td><i class="fab fa-apple"></i> iPhone 8</td><td>Screen Replacement</td><td>R500</td></tr>
@@ -222,7 +224,9 @@
         <div class="pricing-table-wrapper">
             <div class="table-responsive">
                 <table class="pricing-table">
-                    <thead><tr><th>Device</th><th>Repair</th><th>Price (ZAR)</th></tr></thead>
+                    <thead>
+                        <tr><th>Device</th><th>Repair</th><th>Price (ZAR)</th></tr>
+                    </thead>
                     <tbody>
                         <tr><td><i class="fab fa-apple"></i> iPhone 7 plus</td><td>Battery Replacement</td><td>R450</td></tr>
                         <tr><td><i class="fab fa-apple"></i> iPhone 8</td><td>Battery Replacement</td><td>R500</td></tr>
@@ -312,8 +316,11 @@
     <!-- REVIEWS SECTION -->
     <div class="reviews-section" id="reviewsSection">
         <div class="reviews-header">
-            <h2><i class="fas fa-star"></i> Client Testimonials</h2>
-            <p>Real reviews from our happy customers</p>
+            <h2><i class="fas fa-star"></i> Reviews</h2>
+            <p>Real reviews from our  customers</p>
+            <div id="cloudSyncStatus" class="cloud-status">
+                <i class="fas fa-cloud-upload-alt"></i> Syncing with cloud...
+            </div>
             <div class="rating-summary" id="ratingSummary">
                 <span class="average-rating" id="avgRating">0.0</span>
                 <div class="stars-summary" id="avgStarsDisplay"></div>
@@ -362,7 +369,7 @@
         </div>
     </div>
 
-    <!-- REPAIR DOCTOR PROFILE -->
+    <!-- REPAIR DOCTOR PROFILE (FULLY SYNCED WITH REVIEWS) -->
     <div class="doctor-profile">
         <div class="doctor-image">
             <img src="src/images/ofentse_picture_pp.jpeg" alt="Dr. Ofentse - Your Repair Doctor">
@@ -371,10 +378,8 @@
         <div class="doctor-details">
             <h2><i class="fas fa-user-md"></i> Meet Your Repair Doctor: <span>Ofentse</span></h2>
             <div class="doctor-title">🔧 Electronics Specialist | 2+ Years Experience</div>
-            <div class="doctor-stats">
-                <div class="stat"><i class="fas fa-wrench"></i> 30+ Devices Fixed</div>
-                <div class="stat"><i class="fas fa-star"></i> 4.98 ⭐ (20 reviews)</div>
-                <div class="stat"><i class="fas fa-certificate"></i> Apple & Samsung Certified</div>
+            <div class="doctor-stats" id="doctorStats">
+                <div class="stat"><i class="fas fa-wrench"></i> Loading...</div>
             </div>
             <div class="doctor-contact-row">
                 <div class="contact-detail"><i class="fas fa-phone-alt"></i> <strong>Call/WhatsApp:</strong> +27 64 666 0240</div>

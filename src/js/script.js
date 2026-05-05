@@ -51,7 +51,7 @@ async function loadReviewsFromCloud() {
             reviews = data.record.reviews;
             // Also save to localStorage as backup
             localStorage.setItem('theOhubReviews', JSON.stringify(reviews));
-            updateCloudStatus(`✓ Loaded ${reviews.length} reviews from cloud`, "success");
+            updateCloudStatus(`✓  ${reviews.length} reviews `, "success");
         } else {
             // No reviews in cloud yet, use localStorage or defaults
             loadReviewsFromLocal();
@@ -74,8 +74,8 @@ function loadReviewsFromLocal() {
     } else {
         // Default reviews
         reviews = [
-            { id: Date.now() + 1, name: "Thabo Mbeki", rating: 5, text: "Fixed my water-damaged iPhone in 2 hours! Amazing service!", date: new Date().toLocaleDateString() },
-            { id: Date.now() + 2, name: "Lerato Smith", rating: 4, text: "SSD upgrade made my laptop fly. Very professional.", date: new Date().toLocaleDateString() },
+            { id: Date.now() + 1, name: "Thabiso Mbeko", rating: 5, text: "Fixed my water-damaged iPhone in 2 hours! Amazing service!", date: new Date().toLocaleDateString() },
+            { id: Date.now() + 2, name: "Lerato Sammy", rating: 4, text: "SSD upgrade made my laptop fly. Very professional.", date: new Date().toLocaleDateString() },
             { id: Date.now() + 3, name: "Sipho Dlamini", rating: 5, text: "Best repair shop in Joburg! My MacBook works like new.", date: new Date().toLocaleDateString() }
         ];
         saveReviewsToLocal();

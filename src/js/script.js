@@ -5,7 +5,7 @@ const JSONBIN_API_KEY = "$2a$10$s4WYHMR7tDGutbSmYTI2FOZ4xUEvBgAiaxnS/DoUlUl/kFWi
 // ========== GLOBAL VARIABLES ==========
 let reviews = [];
 let isAdmin = false;
-const ADMIN_PASSWORD = "TheOHubAdmin2025"; // Change this to your own password!
+const ADMIN_PASSWORD = "TheOHub2025"; // Change this to your own password!
 
 // ========== CLOUD SYNC FUNCTIONS ==========
 function updateCloudStatus(message, type = "syncing") {

@@ -58,7 +58,7 @@ async function loadReviewsFromCloud() {
         }
     } catch (error) {
         console.error("Cloud sync error:", error);
-        updateCloudStatus("⚠️ Using local reviews (cloud unavailable)", "error");
+        updateCloudStatus(" =Reviews Loaded", "error");
         loadReviewsFromLocal();
     }
     

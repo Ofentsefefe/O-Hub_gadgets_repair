@@ -135,7 +135,7 @@ function updateDoctorStats() {
     doctorStatsContainer.innerHTML = `
         <div class="stat"><i class="fas fa-wrench"></i> ${devicesFixed}+ Devices Fixed</div>
         <div class="stat"><i class="fas fa-star"></i> ${averageRating} ⭐ (${totalReviews} reviews)</div>
-        <div class="stat"><i class="fas fa-certificate"></i> Apple & Samsung Certified</div>
+        <div class="stat"><i class="fas fa-certificate"></i> </div>
     `;
     
     // Update doctor title with live rating

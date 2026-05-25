@@ -103,7 +103,7 @@ async function saveReviewsToCloud() {
         saveReviewsToLocal();
     } catch (error) {
         console.error("Cloud save error:", error);
-        updateCloudStatus("⚠️ Saved locally (offline)", "error");
+        updateCloudStatus("⚠️ ", "error");
         saveReviewsToLocal();
     } finally {
         syncInProgress = false;
